@@ -453,10 +453,20 @@ def test_scan_model(test_config):
 
     with pytest.raises(ValueError):
         CatalogScanModelRequest(scan_tables=False, scan_views=False)
-        CatalogScanModelRequest(scan_tables=False, scan_views=False)
 
     # TODO - how to simulate warnings in AIO?
     assert len(scan_result.warnings) == 0
+
+
+@gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_scan_model_with_table_prefix.json"))
+def test_scan_mode_with_table_prefix(test_config):
+    sdk = GoodDataSdk.create(host_=test_config["host"], token_=test_config["token"])
+    data_source_id = test_config["data_source"]
+    request = CatalogScanModelRequest(table_prefix="order", separator="_")
+
+    scan_result = sdk.catalog_data_source.scan_data_source(data_source_id, request)
+    assert len(scan_result.pdm.tables) == 1
+    assert scan_result.pdm.tables[0].name_prefix == "order"
 
 
 @gd_vcr.use_cassette(str(_fixtures_dir / "demo_test_scan_and_put_declarative_pdm.json"))

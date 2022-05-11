@@ -20,8 +20,8 @@ class CatalogDataSourceTable(CatalogEntity):
         return [CatalogDataSourceTableColumn(c) for c in self._e["columns"]]
 
     @property
-    def username(self) -> str:
-        return self._e["username"]
+    def name_prefix(self) -> str:
+        return self._e["namePrefix"]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id}, path={str(self.path)})"

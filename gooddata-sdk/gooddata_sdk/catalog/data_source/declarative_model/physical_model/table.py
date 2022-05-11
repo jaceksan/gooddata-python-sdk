@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from gooddata_metadata_client.model.declarative_table import DeclarativeTable
 from gooddata_sdk.catalog.data_source.declarative_model.physical_model.column import CatalogDeclarativeColumn
@@ -16,10 +16,12 @@ class CatalogDeclarativeTable(CatalogTypeEntity):
         id: str,
         type: str,
         path: list[str],
+        name_prefix: Optional[str],
         columns: list[CatalogDeclarativeColumn],
     ):
         super(CatalogDeclarativeTable, self).__init__(id, type)
         self.path = path
+        self.name_prefix = name_prefix
         self.columns = columns
 
     @classmethod
@@ -29,12 +31,16 @@ class CatalogDeclarativeTable(CatalogTypeEntity):
             id=entity["id"],
             type=entity["type"],
             path=entity["path"],
+            name_prefix=entity.get("name_prefix"),
             columns=columns,
         )
 
     def to_api(self) -> DeclarativeTable:
         columns = [v.to_api() for v in self.columns]
-        return DeclarativeTable(id=self.id, type=self.type, path=self.path, columns=columns)
+        kwargs = dict()
+        if self.name_prefix is not None:
+            kwargs["name_prefix"] = self.name_prefix
+        return DeclarativeTable(id=self.id, type=self.type, path=self.path, columns=columns, **kwargs)
 
     def store_to_disk(self, pdm_folder: Path) -> None:
         table_dict = self.to_api().to_dict(camel_case=True)
